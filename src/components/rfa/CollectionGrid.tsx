@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CARDS, type CardDef } from "../../data/cards";
+import { ANOMALOUS_CARD_IDS, getSerialNumber } from "../../data/messages";
 import { useCollectionStore } from "../../state/collectionStore";
 import CardView from "../shared/CardView";
 
@@ -37,6 +38,15 @@ export default function CollectionGrid() {
             onClick={(event) => event.stopPropagation()}
           >
             <CardView card={selectedCard} />
+            <p
+              className={
+                ANOMALOUS_CARD_IDS.includes(selectedCard.id)
+                  ? "card-detail-overlay__serial card-detail-overlay__serial--anomaly"
+                  : "card-detail-overlay__serial"
+              }
+            >
+              {getSerialNumber(selectedCard.id)}
+            </p>
             <button
               type="button"
               className="card-detail-overlay__close"
