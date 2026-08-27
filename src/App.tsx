@@ -1,3 +1,5 @@
+import CollectionGrid from "./components/rfa/CollectionGrid";
+
 export default function App() {
-  return <div>Telefonkarte</div>;
+  return <CollectionGrid />;
 }
