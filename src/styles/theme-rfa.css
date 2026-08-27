@@ -75,6 +75,48 @@ body {
   border-radius: 999px;
 }
 
+.card-view[role="button"] {
+  cursor: pointer;
+}
+
+.card-detail-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.card-detail-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.7);
+}
+
+.card-detail-overlay__content {
+  position: relative;
+  width: min(320px, 80vw);
+  background: var(--rfa-bg);
+  border-radius: var(--rfa-card-radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.card-detail-overlay__close {
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  background: var(--rfa-accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 .shop-screen {
   text-align: center;
   margin-top: 48px;
