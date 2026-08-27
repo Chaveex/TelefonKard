@@ -1,5 +1,11 @@
-import ShopScreen from "./components/rfa/ShopScreen";
+import { CARDS } from "./data/cards";
+import PackOpening from "./components/rfa/PackOpening";
 
 export default function App() {
-  return <ShopScreen onPackOpened={(card) => console.log("drawn:", card)} />;
+  return (
+    <PackOpening
+      card={CARDS[0]}
+      onContinue={() => console.log("continue clicked")}
+    />
+  );
 }
