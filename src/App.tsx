@@ -1,5 +1,5 @@
-import CollectionGrid from "./components/rfa/CollectionGrid";
+import ShopScreen from "./components/rfa/ShopScreen";
 
 export default function App() {
-  return <CollectionGrid />;
+  return <ShopScreen onPackOpened={(card) => console.log("drawn:", card)} />;
 }
