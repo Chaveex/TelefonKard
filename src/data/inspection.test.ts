@@ -43,6 +43,16 @@ describe("generateQueue", () => {
       expect(validIds.has(card.id)).toBe(true);
     }
   });
+
+  it("shuffles: anomalous cards do not always land at fixed positions", () => {
+    const positions = new Set<number>();
+    for (let i = 0; i < 100; i++) {
+      generateQueue().forEach((card, idx) => {
+        if (ANOMALOUS_CARD_IDS.includes(card.id)) positions.add(idx);
+      });
+    }
+    expect(positions.size).toBeGreaterThan(GUARANTEED_ANOMALOUS);
+  });
 });
 
 describe("isCompromising", () => {
