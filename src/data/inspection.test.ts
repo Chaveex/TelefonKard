@@ -47,6 +47,15 @@ describe("generateQueue", () => {
     expect(anomalousInQueue).toHaveLength(GUARANTEED_ANOMALOUS);
   });
 
+  it("includes exactly GUARANTEED_ANOMALOUS owned anomalous cards, over many real random draws", () => {
+    const owned = ownedFromIds(CARDS.map((c) => c.id)); // owns all 20
+    for (let i = 0; i < 200; i++) {
+      const queue = generateQueue(owned);
+      const anomalousInQueue = queue.filter((card) => isCompromising(card.id));
+      expect(anomalousInQueue).toHaveLength(GUARANTEED_ANOMALOUS);
+    }
+  });
+
   it("includes only as many anomalous cards as the player actually owns, if fewer than GUARANTEED_ANOMALOUS", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     const oneAnomalousId = ANOMALOUS_CARD_IDS[0];

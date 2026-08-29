@@ -31,6 +31,8 @@ export function generateQueue(owned: Record<string, number>): CardDef[] {
   const queueSize = Math.min(QUEUE_SIZE, ownedCards.length);
 
   const anomalousOwned = ownedCards.filter((card) => isCompromising(card.id));
+  const cleanOwned = ownedCards.filter((card) => !isCompromising(card.id));
+
   const anomalousCount = Math.min(
     GUARANTEED_ANOMALOUS,
     anomalousOwned.length,
@@ -39,11 +41,19 @@ export function generateQueue(owned: Record<string, number>): CardDef[] {
   const anomalousPicked = pickRandom(anomalousOwned, anomalousCount);
   const pickedIds = new Set(anomalousPicked.map((card) => card.id));
 
-  const remainingPool = ownedCards.filter((card) => !pickedIds.has(card.id));
   const remainingCount = queueSize - anomalousCount;
-  const restPicked = pickRandom(remainingPool, remainingCount);
+  const cleanPicked = pickRandom(
+    cleanOwned,
+    Math.min(remainingCount, cleanOwned.length),
+  );
 
-  return shuffle([...anomalousPicked, ...restPicked]);
+  const stillNeeded = remainingCount - cleanPicked.length;
+  const leftoverAnomalous = anomalousOwned.filter(
+    (card) => !pickedIds.has(card.id),
+  );
+  const fillerPicked = pickRandom(leftoverAnomalous, stillNeeded);
+
+  return shuffle([...anomalousPicked, ...cleanPicked, ...fillerPicked]);
 }
 
 export function isCompromising(cardId: string): boolean {
