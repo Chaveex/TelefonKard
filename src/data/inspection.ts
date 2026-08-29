@@ -26,18 +26,24 @@ function shuffle<T>(items: T[]): T[] {
   return result;
 }
 
-export function generateQueue(): CardDef[] {
-  const anomalousPool = CARDS.filter((card) =>
-    ANOMALOUS_CARD_IDS.includes(card.id),
-  );
-  const cleanPool = CARDS.filter(
-    (card) => !ANOMALOUS_CARD_IDS.includes(card.id),
-  );
+export function generateQueue(owned: Record<string, number>): CardDef[] {
+  const ownedCards = CARDS.filter((card) => (owned[card.id] ?? 0) > 0);
+  const queueSize = Math.min(QUEUE_SIZE, ownedCards.length);
 
-  const anomalous = pickRandom(anomalousPool, GUARANTEED_ANOMALOUS);
-  const clean = pickRandom(cleanPool, QUEUE_SIZE - GUARANTEED_ANOMALOUS);
+  const anomalousOwned = ownedCards.filter((card) => isCompromising(card.id));
+  const anomalousCount = Math.min(
+    GUARANTEED_ANOMALOUS,
+    anomalousOwned.length,
+    queueSize,
+  );
+  const anomalousPicked = pickRandom(anomalousOwned, anomalousCount);
+  const pickedIds = new Set(anomalousPicked.map((card) => card.id));
 
-  return shuffle([...anomalous, ...clean]);
+  const remainingPool = ownedCards.filter((card) => !pickedIds.has(card.id));
+  const remainingCount = queueSize - anomalousCount;
+  const restPicked = pickRandom(remainingPool, remainingCount);
+
+  return shuffle([...anomalousPicked, ...restPicked]);
 }
 
 export function isCompromising(cardId: string): boolean {
