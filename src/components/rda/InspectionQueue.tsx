@@ -21,16 +21,14 @@ export default function InspectionQueue() {
   useEffect(() => {
     if (roundOver) return;
     const interval = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          setRoundOver(true);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setSecondsLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(interval);
   }, [roundOver]);
+
+  useEffect(() => {
+    if (secondsLeft === 0 && !roundOver) setRoundOver(true);
+  }, [secondsLeft, roundOver]);
 
   const startNewRound = () => {
     setQueue(generateQueue());
