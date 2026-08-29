@@ -1,0 +1,107 @@
+.rda-theme {
+  --rda-bg: #2b2b28;
+  --rda-panel: #3a3a36;
+  --rda-text: #d8d4c8;
+  --rda-accent: #8a1f1f;
+  --rda-border: #5a5a54;
+  font-family: "Courier New", monospace;
+  background: var(--rda-bg);
+  color: var(--rda-text);
+  padding: 24px;
+  border-radius: 4px;
+}
+
+.inspection-queue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.inspection-queue__timer {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.inspection-queue__summary {
+  text-align: center;
+  line-height: 1.6;
+}
+
+.inspection-queue__actions {
+  display: flex;
+  gap: 12px;
+}
+
+.inspection-queue button {
+  padding: 10px 20px;
+  font-family: inherit;
+  font-weight: 700;
+  background: var(--rda-panel);
+  color: var(--rda-text);
+  border: 1px solid var(--rda-border);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.inspection-queue button:hover {
+  border-color: var(--rda-accent);
+}
+
+.card-inspector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-inspector__zoom {
+  width: 240px;
+  height: 160px;
+  overflow: hidden;
+  border: 1px solid var(--rda-border);
+}
+
+.card-inspector__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.1s ease-out;
+}
+
+.card-inspector__zoom:hover .card-inspector__image {
+  transform: scale(2);
+}
+
+.card-inspector__serial {
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.05em;
+  color: var(--rda-text);
+  margin: 0;
+}
+
+.suspicion-meter {
+  width: 240px;
+}
+
+.suspicion-meter__label {
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.suspicion-meter__track {
+  width: 100%;
+  height: 10px;
+  background: var(--rda-panel);
+  border: 1px solid var(--rda-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.suspicion-meter__fill {
+  height: 100%;
+  background: var(--rda-accent);
+  transition: width 0.2s ease-out;
+}
