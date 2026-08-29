@@ -94,4 +94,42 @@ describe("collectionStore", () => {
     expect(store.getState().coins).toBe(100);
     expect(store.getState().owned).toEqual({});
   });
+
+  it("destroyCard decrements a count greater than 1", () => {
+    const store = createCollectionStore();
+    store.setState({ owned: { "5": 3 } });
+
+    store.getState().destroyCard("5");
+
+    expect(store.getState().owned).toEqual({ "5": 2 });
+  });
+
+  it("destroyCard removes the key entirely when count reaches 0", () => {
+    const store = createCollectionStore();
+    store.setState({ owned: { "5": 1 } });
+
+    store.getState().destroyCard("5");
+
+    expect(store.getState().owned).toEqual({});
+  });
+
+  it("destroyCard is a no-op when the card is not owned", () => {
+    const store = createCollectionStore();
+    store.setState({ owned: { "5": 1 } });
+
+    store.getState().destroyCard("9");
+
+    expect(store.getState().owned).toEqual({ "5": 1 });
+  });
+
+  it("destroyCard persists the updated owned map", () => {
+    const store = createCollectionStore();
+    store.setState({ owned: { "5": 1 } });
+
+    store.getState().destroyCard("5");
+
+    const raw = localStorage.getItem(STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw!).owned).toEqual({});
+  });
 });
