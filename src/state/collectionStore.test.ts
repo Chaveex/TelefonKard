@@ -132,4 +132,25 @@ describe("collectionStore", () => {
     expect(raw).not.toBeNull();
     expect(JSON.parse(raw!).owned).toEqual({});
   });
+
+  it("resetCollection sets coins back to 100 and clears owned", () => {
+    const store = createCollectionStore();
+    store.setState({ coins: 0, owned: { "1": 3, "5": 1 } });
+
+    store.getState().resetCollection();
+
+    expect(store.getState().coins).toBe(100);
+    expect(store.getState().owned).toEqual({});
+  });
+
+  it("resetCollection persists the reset state", () => {
+    const store = createCollectionStore();
+    store.setState({ coins: 0, owned: { "1": 3 } });
+
+    store.getState().resetCollection();
+
+    const raw = localStorage.getItem(STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw!)).toEqual({ coins: 100, owned: {} });
+  });
 });

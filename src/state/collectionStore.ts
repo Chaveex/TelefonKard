@@ -39,6 +39,7 @@ function persist(state: PersistedState): void {
 export interface CollectionState extends PersistedState {
   openPack: () => CardDef | null;
   destroyCard: (cardId: string) => void;
+  resetCollection: () => void;
 }
 
 export function createCollectionStore(): UseBoundStore<StoreApi<CollectionState>> {
@@ -70,6 +71,11 @@ export function createCollectionStore(): UseBoundStore<StoreApi<CollectionState>
 
       set({ owned: nextOwned });
       persist({ coins, owned: nextOwned });
+    },
+    resetCollection: () => {
+      const next = { coins: STARTING_COINS, owned: {} };
+      set(next);
+      persist(next);
     },
   }));
 }

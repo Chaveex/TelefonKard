@@ -1,6 +1,8 @@
 import { create, type StoreApi, type UseBoundStore } from "zustand";
 
 const STORAGE_KEY = "telefonkarte-suspicion";
+export const WARNING_THRESHOLD = 70;
+export const ARREST_THRESHOLD = 100;
 
 interface PersistedState {
   suspicion: number;
@@ -34,6 +36,7 @@ function persist(state: PersistedState): void {
 
 export interface SuspicionState extends PersistedState {
   addSuspicion: (amount: number) => void;
+  resetSuspicion: () => void;
 }
 
 export function createSuspicionStore(): UseBoundStore<StoreApi<SuspicionState>> {
@@ -43,6 +46,10 @@ export function createSuspicionStore(): UseBoundStore<StoreApi<SuspicionState>> 
       const next = Math.min(100, Math.max(0, get().suspicion + amount));
       set({ suspicion: next });
       persist({ suspicion: next });
+    },
+    resetSuspicion: () => {
+      set({ suspicion: 0 });
+      persist({ suspicion: 0 });
     },
   }));
 }

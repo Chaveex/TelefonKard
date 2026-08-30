@@ -58,4 +58,24 @@ describe("suspicionStore", () => {
 
     expect(store.getState().suspicion).toBe(0);
   });
+
+  it("resetSuspicion sets suspicion back to 0", () => {
+    const store = createSuspicionStore();
+    store.getState().addSuspicion(80);
+
+    store.getState().resetSuspicion();
+
+    expect(store.getState().suspicion).toBe(0);
+  });
+
+  it("resetSuspicion persists the reset value", () => {
+    const store = createSuspicionStore();
+    store.getState().addSuspicion(80);
+
+    store.getState().resetSuspicion();
+
+    const raw = localStorage.getItem(STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw!)).toEqual({ suspicion: 0 });
+  });
 });
