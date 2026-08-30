@@ -140,14 +140,32 @@ describe("collectionStore", () => {
 
   it("destroyCard is a no-op when the card is not owned", () => {
     const store = createCollectionStore();
-    store.setState({
-      instances: [{ cardId: "5", instanceId: "a" }],
-      owned: { "5": 1 },
-    });
+    const seededInstances = [{ cardId: "5", instanceId: "a" }];
+    store.setState({ instances: seededInstances, owned: { "5": 1 } });
 
     store.getState().destroyCard("9");
 
+    expect(store.getState().instances).toEqual(seededInstances);
     expect(store.getState().owned).toEqual({ "5": 1 });
+  });
+
+  it("destroyCard removes the first matching instance and leaves other cards alone", () => {
+    const store = createCollectionStore();
+    store.setState({
+      instances: [
+        { cardId: "5", instanceId: "a" },
+        { cardId: "9", instanceId: "b" },
+        { cardId: "5", instanceId: "c" },
+      ],
+    });
+
+    store.getState().destroyCard("5");
+
+    expect(store.getState().instances).toEqual([
+      { cardId: "9", instanceId: "b" },
+      { cardId: "5", instanceId: "c" },
+    ]);
+    expect(store.getState().owned).toEqual({ "5": 1, "9": 1 });
   });
 
   it("destroyCard persists the updated instances", () => {
