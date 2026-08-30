@@ -1,5 +1,10 @@
 import { create, type StoreApi, type UseBoundStore } from "zustand";
 import { CARDS, type CardDef } from "../data/cards";
+import {
+  computeOwned,
+  generateInstanceId,
+  type CardInstance,
+} from "../data/cardInstance";
 
 const STORAGE_KEY = "telefonkarte-collection";
 export const PACK_PRICE = 20;
@@ -7,24 +12,24 @@ const STARTING_COINS = 100;
 
 interface PersistedState {
   coins: number;
-  owned: Record<string, number>;
+  instances: CardInstance[];
 }
 
 function isPersistedState(value: unknown): value is PersistedState {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  return typeof v.coins === "number" && typeof v.owned === "object" && v.owned !== null;
+  return typeof v.coins === "number" && Array.isArray(v.instances);
 }
 
 function loadInitialState(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { coins: STARTING_COINS, owned: {} };
+    if (!raw) return { coins: STARTING_COINS, instances: [] };
     const parsed: unknown = JSON.parse(raw);
-    if (!isPersistedState(parsed)) return { coins: STARTING_COINS, owned: {} };
-    return { coins: parsed.coins, owned: parsed.owned };
+    if (!isPersistedState(parsed)) return { coins: STARTING_COINS, instances: [] };
+    return { coins: parsed.coins, instances: parsed.instances };
   } catch {
-    return { coins: STARTING_COINS, owned: {} };
+    return { coins: STARTING_COINS, instances: [] };
   }
 }
 
@@ -36,45 +41,59 @@ function persist(state: PersistedState): void {
   }
 }
 
-export interface CollectionState extends PersistedState {
+export interface CollectionState {
+  coins: number;
+  instances: CardInstance[];
+  owned: Record<string, number>;
   openPack: () => CardDef | null;
   destroyCard: (cardId: string) => void;
   resetCollection: () => void;
 }
 
 export function createCollectionStore(): UseBoundStore<StoreApi<CollectionState>> {
+  const initial = loadInitialState();
+
   return create<CollectionState>((set, get) => ({
-    ...loadInitialState(),
+    coins: initial.coins,
+    instances: initial.instances,
+    owned: computeOwned(initial.instances),
     openPack: () => {
-      const { coins, owned } = get();
+      const { coins, instances } = get();
       if (coins < PACK_PRICE) return null;
 
       const card = CARDS[Math.floor(Math.random() * CARDS.length)];
-      const nextOwned = { ...owned, [card.id]: (owned[card.id] ?? 0) + 1 };
+      const nextInstances = [
+        ...instances,
+        { cardId: card.id, instanceId: generateInstanceId(card.id) },
+      ];
       const nextCoins = coins - PACK_PRICE;
 
-      set({ coins: nextCoins, owned: nextOwned });
-      persist({ coins: nextCoins, owned: nextOwned });
+      set({
+        coins: nextCoins,
+        instances: nextInstances,
+        owned: computeOwned(nextInstances),
+      });
+      persist({ coins: nextCoins, instances: nextInstances });
       return card;
     },
     destroyCard: (cardId: string) => {
-      const { coins, owned } = get();
-      const count = owned[cardId] ?? 0;
-      if (count <= 0) return;
+      const { coins, instances } = get();
+      const index = instances.findIndex(
+        (instance) => instance.cardId === cardId,
+      );
+      if (index === -1) return;
 
-      const nextOwned = { ...owned };
-      if (count <= 1) {
-        delete nextOwned[cardId];
-      } else {
-        nextOwned[cardId] = count - 1;
-      }
+      const nextInstances = [
+        ...instances.slice(0, index),
+        ...instances.slice(index + 1),
+      ];
 
-      set({ owned: nextOwned });
-      persist({ coins, owned: nextOwned });
+      set({ instances: nextInstances, owned: computeOwned(nextInstances) });
+      persist({ coins, instances: nextInstances });
     },
     resetCollection: () => {
-      const next = { coins: STARTING_COINS, owned: {} };
-      set(next);
+      const next: PersistedState = { coins: STARTING_COINS, instances: [] };
+      set({ ...next, owned: {} });
       persist(next);
     },
   }));

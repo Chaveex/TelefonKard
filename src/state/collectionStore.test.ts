@@ -59,16 +59,23 @@ describe("collectionStore", () => {
 
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(JSON.parse(raw!)).toEqual({
-      coins: 80,
-      owned: { [CARDS[0].id]: 1 },
-    });
+    const persisted = JSON.parse(raw!);
+    expect(persisted.coins).toBe(80);
+    expect(persisted.instances).toHaveLength(1);
+    expect(persisted.instances[0].cardId).toBe(CARDS[0].id);
+    expect(typeof persisted.instances[0].instanceId).toBe("string");
   });
 
   it("rehydrates state from localStorage on creation", () => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ coins: 42, owned: { "3": 2 } }),
+      JSON.stringify({
+        coins: 42,
+        instances: [
+          { cardId: "3", instanceId: "a" },
+          { cardId: "3", instanceId: "b" },
+        ],
+      }),
     );
 
     const store = createCollectionStore();
@@ -95,9 +102,27 @@ describe("collectionStore", () => {
     expect(store.getState().owned).toEqual({});
   });
 
+  it("falls back to initial state when localStorage holds the old owned-map format", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ coins: 42, owned: { "3": 2 } }),
+    );
+
+    const store = createCollectionStore();
+
+    expect(store.getState().coins).toBe(100);
+    expect(store.getState().owned).toEqual({});
+  });
+
   it("destroyCard decrements a count greater than 1", () => {
     const store = createCollectionStore();
-    store.setState({ owned: { "5": 3 } });
+    store.setState({
+      instances: [
+        { cardId: "5", instanceId: "a" },
+        { cardId: "5", instanceId: "b" },
+        { cardId: "5", instanceId: "c" },
+      ],
+    });
 
     store.getState().destroyCard("5");
 
@@ -106,7 +131,7 @@ describe("collectionStore", () => {
 
   it("destroyCard removes the key entirely when count reaches 0", () => {
     const store = createCollectionStore();
-    store.setState({ owned: { "5": 1 } });
+    store.setState({ instances: [{ cardId: "5", instanceId: "a" }] });
 
     store.getState().destroyCard("5");
 
@@ -115,27 +140,38 @@ describe("collectionStore", () => {
 
   it("destroyCard is a no-op when the card is not owned", () => {
     const store = createCollectionStore();
-    store.setState({ owned: { "5": 1 } });
+    store.setState({
+      instances: [{ cardId: "5", instanceId: "a" }],
+      owned: { "5": 1 },
+    });
 
     store.getState().destroyCard("9");
 
     expect(store.getState().owned).toEqual({ "5": 1 });
   });
 
-  it("destroyCard persists the updated owned map", () => {
+  it("destroyCard persists the updated instances", () => {
     const store = createCollectionStore();
-    store.setState({ owned: { "5": 1 } });
+    store.setState({ instances: [{ cardId: "5", instanceId: "a" }] });
 
     store.getState().destroyCard("5");
 
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(JSON.parse(raw!).owned).toEqual({});
+    expect(JSON.parse(raw!).instances).toEqual([]);
   });
 
   it("resetCollection sets coins back to 100 and clears owned", () => {
     const store = createCollectionStore();
-    store.setState({ coins: 0, owned: { "1": 3, "5": 1 } });
+    store.setState({
+      coins: 0,
+      instances: [
+        { cardId: "1", instanceId: "a" },
+        { cardId: "1", instanceId: "b" },
+        { cardId: "1", instanceId: "c" },
+        { cardId: "5", instanceId: "d" },
+      ],
+    });
 
     store.getState().resetCollection();
 
@@ -145,12 +181,15 @@ describe("collectionStore", () => {
 
   it("resetCollection persists the reset state", () => {
     const store = createCollectionStore();
-    store.setState({ coins: 0, owned: { "1": 3 } });
+    store.setState({
+      coins: 0,
+      instances: [{ cardId: "1", instanceId: "a" }],
+    });
 
     store.getState().resetCollection();
 
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
-    expect(JSON.parse(raw!)).toEqual({ coins: 100, owned: {} });
+    expect(JSON.parse(raw!)).toEqual({ coins: 100, instances: [] });
   });
 });
