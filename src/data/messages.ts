@@ -5,3 +5,10 @@ export function getSerialNumber(cardId: string): string {
   if (!ANOMALOUS_CARD_IDS.includes(cardId)) return `DBP-${padded}-83`;
   return `DBP-${padded}X-8V`;
 }
+
+export const HIDDEN_LETTERS: Record<string, string> = {
+  "3": "K",
+  "7": "G",
+  "12": "B",
+  "18": "R",
+};

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ANOMALOUS_CARD_IDS, getSerialNumber } from "./messages";
+import { ANOMALOUS_CARD_IDS, getSerialNumber, HIDDEN_LETTERS } from "./messages";
 
 describe("getSerialNumber", () => {
   it("returns the clean DBP-XXX-83 format for a non-anomalous card", () => {
@@ -27,5 +27,19 @@ describe("getSerialNumber", () => {
       expect(n).toBeGreaterThanOrEqual(1);
       expect(n).toBeLessThanOrEqual(20);
     }
+  });
+});
+
+describe("HIDDEN_LETTERS", () => {
+  it("has exactly one single-uppercase-letter entry per anomalous card id", () => {
+    for (const id of ANOMALOUS_CARD_IDS) {
+      expect(HIDDEN_LETTERS[id]).toMatch(/^[A-Z]$/);
+    }
+  });
+
+  it("has no entries for non-anomalous card ids", () => {
+    expect(Object.keys(HIDDEN_LETTERS).sort()).toEqual(
+      [...ANOMALOUS_CARD_IDS].sort(),
+    );
   });
 });
