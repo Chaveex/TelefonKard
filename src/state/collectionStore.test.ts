@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createCollectionStore, PACK_PRICE } from "./collectionStore";
 import { CARDS } from "../data/cards";
+import { HIDDEN_LETTERS } from "../data/messages";
 
 const STORAGE_KEY = "telefonkarte-collection";
 
@@ -209,5 +210,42 @@ describe("collectionStore", () => {
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).not.toBeNull();
     expect(JSON.parse(raw!)).toEqual({ coins: 100, instances: [] });
+  });
+});
+
+describe("collectionStore — layer-2 marking", () => {
+  it("marks the drawn instance when the card is anomalous and the mark roll succeeds", () => {
+    const randomSpy = vi.spyOn(Math, "random");
+    randomSpy.mockReturnValueOnce(0.1); // floor(0.1 * 20) = 2 -> CARDS[2], id "3" (anomalous)
+    randomSpy.mockReturnValueOnce(0.5); // generateInstanceId's random suffix
+    randomSpy.mockReturnValueOnce(0.1); // < MARK_CHANCE (0.3) -> marked
+    const store = createCollectionStore();
+
+    store.getState().openPack();
+
+    const instance = store.getState().instances[0];
+    expect(instance.cardId).toBe("3");
+    expect(instance.markedLetter).toBe(HIDDEN_LETTERS["3"]);
+  });
+
+  it("does not mark the drawn instance when the mark roll fails", () => {
+    const randomSpy = vi.spyOn(Math, "random");
+    randomSpy.mockReturnValueOnce(0.1); // CARDS[2], id "3" (anomalous)
+    randomSpy.mockReturnValueOnce(0.5); // generateInstanceId's random suffix
+    randomSpy.mockReturnValueOnce(0.9); // >= MARK_CHANCE -> not marked
+    const store = createCollectionStore();
+
+    store.getState().openPack();
+
+    expect(store.getState().instances[0].markedLetter).toBeUndefined();
+  });
+
+  it("never marks a non-anomalous card's drawn instance", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0); // CARDS[0], id "1" (not anomalous)
+    const store = createCollectionStore();
+
+    store.getState().openPack();
+
+    expect(store.getState().instances[0].markedLetter).toBeUndefined();
   });
 });

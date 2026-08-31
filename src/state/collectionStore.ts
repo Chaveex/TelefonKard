@@ -2,7 +2,7 @@ import { create, type StoreApi, type UseBoundStore } from "zustand";
 import { CARDS, type CardDef } from "../data/cards";
 import {
   computeOwned,
-  generateInstanceId,
+  createInstance,
   type CardInstance,
 } from "../data/cardInstance";
 
@@ -62,10 +62,7 @@ export function createCollectionStore(): UseBoundStore<StoreApi<CollectionState>
       if (coins < PACK_PRICE) return null;
 
       const card = CARDS[Math.floor(Math.random() * CARDS.length)];
-      const nextInstances = [
-        ...instances,
-        { cardId: card.id, instanceId: generateInstanceId(card.id) },
-      ];
+      const nextInstances = [...instances, createInstance(card.id)];
       const nextCoins = coins - PACK_PRICE;
 
       set({
